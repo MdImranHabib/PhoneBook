@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MimeKit;
 using PBMS.Models;
 using PBMS.Models.AccountViewModels;
 using PBMS.Services;
@@ -57,10 +59,17 @@ namespace PBMS.Controllers
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
+            
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
+                var user = await _userManager.FindByEmailAsync(model.Email);
+
+                if(user != null && !user.EmailConfirmed && (await _userManager.CheckPasswordAsync(user, model.Password)))
+                {
+                    ModelState.AddModelError(string.Empty, "Email not confirmed yet");
+                    return View(model);
+                }
+
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
@@ -209,6 +218,8 @@ namespace PBMS.Controllers
         public IActionResult Register(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
+            ViewBag.ErrorTitle = "";
+            ViewBag.ErrorMessage = "";
             return View();
         }
 
@@ -220,25 +231,71 @@ namespace PBMS.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email
+                };
+
                 var result = await _userManager.CreateAsync(user, model.Password);
+
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User created a new account with password.");
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var confirmationLink = Url.EmailConfirmationLink(user.Id, token, Request.Scheme);
+                    SendEmail(model.Email, confirmationLink);
+                    //await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);                 
 
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                    await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
+                    if (_signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                    {
+                        return RedirectToAction("Contact", "Home");
+                    }
 
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation("User created a new account with password.");
-                    return RedirectToLocal(returnUrl);
+                    ViewBag.ErrorTitle = "Registration Successful";
+                    ViewBag.ErrorMessage = "Before you can login, please confirm your email by clicking on the confirmation link we have emailed you";
+                    return View("Register");
                 }
                 AddErrors(result);
             }
 
             // If we got this far, something failed, redisplay form
             return View(model);
+        }
+
+        public void SendEmail(string email, string url)
+        {
+         
+            //Instantiate mime message
+            var message = new MimeMessage();
+
+            // Set from address
+            message.From.Add(new MailboxAddress("MassData Ltd.", "mihtestemail@gmail.com"));
+
+            // Set to address
+            message.To.Add(new MailboxAddress(email, email));
+
+            // Set the subject
+            message.Subject = "Email Confirmation";
+
+            // mail body
+            message.Body = new TextPart("plain")                                        
+            {
+                Text = url
+            };
+
+            // Configure and send email
+            using (var client = new SmtpClient())
+            {
+                client.Connect("smtp.gmail.com", 587, false);
+
+                client.Authenticate("mihtestemail@gmail.com", "Mihtestemail2@");
+
+                client.Send(message);
+
+                client.Disconnect(true);
+            }
+
+            return;
         }
 
         [HttpPost]
@@ -343,7 +400,13 @@ namespace PBMS.Controllers
                 throw new ApplicationException($"Unable to load user with ID '{userId}'.");
             }
             var result = await _userManager.ConfirmEmailAsync(user, code);
-            return View(result.Succeeded ? "ConfirmEmail" : "Error");
+            //return View(result.Succeeded ? "ConfirmEmail" : "Error");
+            if (result.Succeeded)
+            {
+                return View();
+            }
+
+            return Content("Email can not be confirmed");
         }
 
         [HttpGet]
