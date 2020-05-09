@@ -32,14 +32,29 @@ namespace PBMS
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.SignIn.RequireConfirmedEmail = true;
-            }) .AddEntityFrameworkStores<ApplicationDbContext>()
+            }).AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
-               
+
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddMvc();
+
+            services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    options.ClientId = "394603513818-ca367il6iiqrkmnoso2u0kqkvbr8ciaa.apps.googleusercontent.com";
+                    options.ClientSecret = "oXgwzXigyh_ZY9vGEyphjiiq";
+                    options.UserInformationEndpoint = "https://www.googleapis.com/oauth2/v1/certs";
+                })
+                .AddFacebook(options =>
+                {
+                    options.AppId = "296591604668015";
+                    options.AppSecret = "7655fa2414c75058dd17528be38e3be6";
+                });
+
             services.AddDistributedMemoryCache();
+
             services.AddSession(option =>
             {
                 option.IdleTimeout = TimeSpan.FromMinutes(15);

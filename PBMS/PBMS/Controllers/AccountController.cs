@@ -42,14 +42,96 @@ namespace PBMS.Controllers
         [TempData]
         public string ErrorMessage { get; set; }
 
+
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(string returnUrl = null)
+        public IActionResult Register(string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            ViewBag.ErrorTitle = "";
+            ViewBag.ErrorMessage = "";
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
+                {
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var confirmationLink = Url.EmailConfirmationLink(user.Id, token, Request.Scheme);
+                    SendEmail(model.Email, confirmationLink);
+                    //await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);                 
+
+                    if (_signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                    {
+                        return RedirectToAction("Contact", "Home");
+                    }
+
+                    ViewBag.ErrorTitle = "Registration Successful";
+                    ViewBag.ErrorMessage = "Before you can login, please confirm your email by clicking on the confirmation link we have emailed you";
+                    return View("Register");
+                }
+                AddErrors(result);
+            }
+
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (userId == null || code == null)
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+            }
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+            //return View(result.Succeeded ? "ConfirmEmail" : "Error");
+            if (result.Succeeded)
+            {
+                return View();
+            }
+
+            return Content("Email can not be confirmed");
+        }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> Login(string returnUrl)
         {
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ViewData["ReturnUrl"] = returnUrl;
+
+            //LoginViewModel model = new LoginViewModel
+            //{
+            //    ReturnUrl = returnUrl,
+            //    ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
+            //};
+
             return View();
         }
 
@@ -95,6 +177,7 @@ namespace PBMS.Controllers
             // If we got this far, something failed, redisplay form
             return View(model);
         }
+
 
         [HttpGet]
         [AllowAnonymous]
@@ -152,6 +235,7 @@ namespace PBMS.Controllers
             }
         }
 
+
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> LoginWithRecoveryCode(string returnUrl = null)
@@ -206,127 +290,31 @@ namespace PBMS.Controllers
             }
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult Lockout()
-        {
-            return View();
-        }
-
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult Register(string returnUrl = null)
-        {
-            ViewData["ReturnUrl"] = returnUrl;
-            ViewBag.ErrorTitle = "";
-            ViewBag.ErrorMessage = "";
-            return View();
-        }
 
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
-        {
-            ViewData["ReturnUrl"] = returnUrl;
-            if (ModelState.IsValid)
-            {
-                var user = new ApplicationUser
-                {
-                    UserName = model.Email,
-                    Email = model.Email
-                };
-
-                var result = await _userManager.CreateAsync(user, model.Password);
-
-                if (result.Succeeded)
-                {
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var confirmationLink = Url.EmailConfirmationLink(user.Id, token, Request.Scheme);
-                    SendEmail(model.Email, confirmationLink);
-                    //await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);                 
-
-                    if (_signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
-                    {
-                        return RedirectToAction("Contact", "Home");
-                    }
-
-                    ViewBag.ErrorTitle = "Registration Successful";
-                    ViewBag.ErrorMessage = "Before you can login, please confirm your email by clicking on the confirmation link we have emailed you";
-                    return View("Register");
-                }
-                AddErrors(result);
-            }
-
-            // If we got this far, something failed, redisplay form
-            return View(model);
-        }
-
-        public void SendEmail(string email, string url)
-        {
-         
-            //Instantiate mime message
-            var message = new MimeMessage();
-
-            // Set from address
-            message.From.Add(new MailboxAddress("MassData Ltd.", "mihtestemail@gmail.com"));
-
-            // Set to address
-            message.To.Add(new MailboxAddress(email, email));
-
-            // Set the subject
-            message.Subject = "Email Confirmation";
-
-            // mail body
-            message.Body = new TextPart("plain")                                        
-            {
-                Text ="Please click here" + url
-            };
-
-            // Configure and send email
-            using (var client = new SmtpClient())
-            {
-                client.Connect("smtp.gmail.com", 587, false);
-
-                client.Authenticate("mihtestemail@gmail.com", "Mihtestemail2@");
-
-                client.Send(message);
-
-                client.Disconnect(true);
-            }
-
-            return;
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout()
-        {
-            await _signInManager.SignOutAsync();
-            _logger.LogInformation("User logged out.");
-            return RedirectToAction(nameof(HomeController.Index), "Home");
-        }
-
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public IActionResult ExternalLogin(string provider, string returnUrl = null)
+        public IActionResult ExternalLogin(string provider, string returnUrl)
         {
             // Request a redirect to the external login provider.
-            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
         }
+
 
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
+            returnUrl = returnUrl ?? Url.Content("~/");
+
             if (remoteError != null)
             {
                 ErrorMessage = $"Error from external provider: {remoteError}";
                 return RedirectToAction(nameof(Login));
             }
+
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
@@ -340,6 +328,31 @@ namespace PBMS.Controllers
                 _logger.LogInformation("User logged in with {Name} provider.", info.LoginProvider);
                 return RedirectToLocal(returnUrl);
             }
+            else
+            {
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+
+                if (email != null)
+                {
+                    var user = await _userManager.FindByEmailAsync(email);
+
+                    if (user == null)
+                    {
+                        user = new ApplicationUser
+                        {
+                            UserName = info.Principal.FindFirstValue(ClaimTypes.Email),
+                            Email = info.Principal.FindFirstValue(ClaimTypes.Email)
+                        };
+
+                        await _userManager.CreateAsync(user);
+                    }
+
+                    await _userManager.AddLoginAsync(user, info);
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    return RedirectToLocal(returnUrl);
+                }
+            }
             if (result.IsLockedOut)
             {
                 return RedirectToAction(nameof(Lockout));
@@ -347,12 +360,14 @@ namespace PBMS.Controllers
             else
             {
                 // If the user does not have an account, then ask the user to create an account.
-                ViewData["ReturnUrl"] = returnUrl;
-                ViewData["LoginProvider"] = info.LoginProvider;
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                return View("ExternalLogin", new ExternalLoginViewModel { Email = email });
+                //ViewData["ReturnUrl"] = returnUrl;
+                //ViewData["LoginProvider"] = info.LoginProvider;
+                //var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                //return View("ExternalLogin", new ExternalLoginViewModel { Email = email });
+                return View("Login");
             }
         }
+
 
         [HttpPost]
         [AllowAnonymous]
@@ -386,28 +401,24 @@ namespace PBMS.Controllers
             return View(nameof(ExternalLogin), model);
         }
 
+
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        public IActionResult Lockout()
         {
-            if (userId == null || code == null)
-            {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
-            }
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                throw new ApplicationException($"Unable to load user with ID '{userId}'.");
-            }
-            var result = await _userManager.ConfirmEmailAsync(user, code);
-            //return View(result.Succeeded ? "ConfirmEmail" : "Error");
-            if (result.Succeeded)
-            {
-                return View();
-            }
-
-            return Content("Email can not be confirmed");
+            return View();
         }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            _logger.LogInformation("User logged out.");
+            return RedirectToAction(nameof(HomeController.Index), "Home");
+        }
+
 
         [HttpGet]
         [AllowAnonymous]
@@ -444,12 +455,14 @@ namespace PBMS.Controllers
             return View(model);
         }
 
+
         [HttpGet]
         [AllowAnonymous]
         public IActionResult ForgotPasswordConfirmation()
         {
             return View();
         }
+
 
         [HttpGet]
         [AllowAnonymous]
@@ -495,6 +508,7 @@ namespace PBMS.Controllers
             return View();
         }
 
+
         [HttpGet]
         [AllowAnonymous]
         public IActionResult ResetPasswordConfirmation()
@@ -503,6 +517,43 @@ namespace PBMS.Controllers
         }
 
 
+        public void SendEmail(string email, string url)
+        {
+         
+            //Instantiate mime message
+            var message = new MimeMessage();
+
+            // Set from address
+            message.From.Add(new MailboxAddress("MassData Ltd.", "mihtestemail@gmail.com"));
+
+            // Set to address
+            message.To.Add(new MailboxAddress(email, email));
+
+            // Set the subject
+            message.Subject = "Email Confirmation";
+
+            // mail body
+            message.Body = new TextPart("plain")                                        
+            {
+                Text ="Please click here" + url
+            };
+
+            // Configure and send email
+            using (var client = new SmtpClient())
+            {
+                client.Connect("smtp.gmail.com", 587, false);
+
+                client.Authenticate("mihtestemail@gmail.com", "Mihtestemail2@");
+
+                client.Send(message);
+
+                client.Disconnect(true);
+            }
+
+            return;
+        }
+
+                          
         [HttpGet]
         public IActionResult AccessDenied()
         {
@@ -518,6 +569,7 @@ namespace PBMS.Controllers
                 ModelState.AddModelError(string.Empty, error.Description);
             }
         }
+
 
         private IActionResult RedirectToLocal(string returnUrl)
         {
