@@ -7,10 +7,10 @@
 
 @{
     ViewData["Title"] = "Log in";
-    //Layout = "~/Views/Shared/BlankLayout.cshtml";
+    Layout = "~/Views/Shared/BlankLayout.cshtml";
 }
 
-<h2>@ViewData["Title"]</h2>
+@*<h2>@ViewData["Title"]</h2>
     <div class="row">
         <div class="col-md-4">
             <section>
@@ -73,7 +73,8 @@
                                 <p>
                                     @foreach (var provider in loginProviders)
                                     {
-                                        <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.Name</button>
+                                        <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" 
+                                                title="Log in using your @provider.DisplayName account">@provider.Name</button>
                                     }
                                 </p>
                             </div>
@@ -86,10 +87,10 @@
 
     @section Scripts {
         @await Html.PartialAsync("_ValidationScriptsPartial")
-    }
+    }*@
 
 
-@*<div class="login">
+<div class="login">
   
     <div class="logo">
         <a asp-action="Login" asp-controller="Account">
@@ -97,53 +98,92 @@
         </a>
     </div>
     <div class="content">
-        <form class="login-form" asp-action="Login" method="post">
-            <h3 class="form-title">Sign In</h3>
-            <div class="alert alert-danger display-hide">
-                <button class="close" data-close="alert"></button>
-                <span asp-validation-summary="All" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                ie8, ie9 does not support html5 placeholder, so we just show field title for that
-                <label class="control-label visible-ie8 visible-ie9">Username</label>
-                <input asp-for="Email" class="form-control form-control-solid placeholder-no-fix" type="text" autocomplete="off" placeholder="Email" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label class="control-label visible-ie8 visible-ie9">Password</label>
-                <input asp-for="Password" class="form-control form-control-solid placeholder-no-fix" type="password" autocomplete="off" placeholder="Password" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-success uppercase">Login</button>
-                <label class="rememberme check">
-                    <input type="checkbox" asp-for="RememberMe" value="1" />Remember
-                </label>         
-                <a asp-action="ForgotPassword" asp-controller="Account" id="forget-password" class="forget-password">Forgot Password?</a>
-            </div>
+        <div class="login-form">
+            <form asp-action="Login" method="post">
+                <h3 class="form-title">Sign In</h3>
+                @*<div class="alert alert-danger display-hide">
+                    <button class="close" data-close="alert"></button>
+                </div>*@
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    @*ie8, ie9 does not support html5 placeholder, so we just show field title for that*@
+                    <label class="control-label visible-ie8 visible-ie9">Email</label>
+                    <input asp-for="Email" class="form-control form-control-solid placeholder-no-fix" type="text" autocomplete="off" placeholder="Email" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="control-label visible-ie8 visible-ie9">Password</label>
+                    <input asp-for="Password" class="form-control form-control-solid placeholder-no-fix" type="password" autocomplete="off" placeholder="Password" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success uppercase">Login</button>
+                    <label class="rememberme check"><input type="checkbox" asp-for="RememberMe" value="1" /> Remember</label>
+                    <a asp-action="ForgotPassword" asp-controller="Account" id="forget-password" class="forget-password">Forgot Password?</a>
+                </div>
+            </form>
+
             <div class="login-options">
                 <h4>Or login with</h4>
-                <ul class="social-icons">
-                    <li>
-                        <a class="social-icon-color facebook" data-original-title="facebook" href="javascript:;"></a>
-                    </li>
-                    <li>
-                        <a class="social-icon-color twitter" data-original-title="Twitter" href="javascript:;"></a>
-                    </li>
-                    <li>
-                        <a class="social-icon-color googleplus" data-original-title="Goole Plus" href="javascript:;"></a>
-                    </li>
-                    <li>
-                        <a class="social-icon-color linkedin" data-original-title="Linkedin" href="javascript:;"></a>
-                    </li>
-                </ul>
+                @{
+                    var loginProviders = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+                    if (loginProviders.Count == 0)
+                    {
+                        <div>
+                            <p>
+                                There are no external authentication services configured.
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-action="ExternalLogin" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
+                            <div class="social-icons">
+                                @foreach (var provider in loginProviders)
+                                {
+                                    if (provider.Name == "Google")
+                                    {
+                                        <p>
+                                            <button type="submit" class="social-icon-color googleplus" name="provider" value="@provider.Name"
+                                                    title="Log in using your @provider.DisplayName account"></button>
+                                        </p>
+                                    }
+                                    if (provider.Name == "Facebook")
+                                    {
+                                        <p>
+                                            <button type="submit" class="social-icon-color facebook" name="provider" value="@provider.Name"
+                                                    title="Log in using your @provider.DisplayName account"></button>
+                                        </p>
+                                    }
+                                    if (provider.Name == "Twitter")
+                                    {
+                                        <p>
+                                            <button type="submit" class="social-icon-color twitter" name="provider" value="@provider.Name"
+                                                    title="Log in using your @provider.DisplayName account"></button>
+                                        </p>
+                                    }
+                                    if (provider.Name == "LinkedIn")
+                                    {
+                                        <p>
+                                            <button type="submit" class="social-icon-color linkedin" name="provider" value="@provider.Name"
+                                                    title="Log in using your @provider.DisplayName account"></button>
+                                        </p>
+                                    }
+
+                                }
+                            </div>
+                        </form>
+                    }
+                }  
+
             </div>
             <div class="create-account">
                 <p>
-                    <a asp-action="Register" asp-controller="Account" id="register-btn" class="uppercase">Create an account</a>
+                    <a asp-action="Register" asp-controller="Account" class="uppercase">Create an account</a>
                 </p>
             </div>
-        </form>
+            
+        </div>
     </div>
     <div class="copyright">
         2020 © MassData Limited.
@@ -152,4 +192,4 @@
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
-}*@
+}

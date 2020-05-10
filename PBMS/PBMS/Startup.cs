@@ -43,9 +43,12 @@ namespace PBMS
             services.AddAuthentication()
                 .AddGoogle(options =>
                 {
+                    //IConfigurationSection googleAuthNSection = Configuration.GetSection("Authentication:Google");
+                    //options.ClientId = googleAuthNSection["394603513818-ca367il6iiqrkmnoso2u0kqkvbr8ciaa.apps.googleusercontent.com"];
+                   //options.ClientSecret = googleAuthNSection["oXgwzXigyh_ZY9vGEyphjiiq"];
                     options.ClientId = "394603513818-ca367il6iiqrkmnoso2u0kqkvbr8ciaa.apps.googleusercontent.com";
                     options.ClientSecret = "oXgwzXigyh_ZY9vGEyphjiiq";
-                    options.UserInformationEndpoint = "https://www.googleapis.com/oauth2/v1/certs";
+                    //options.UserInformationEndpoint = "https://www.googleapis.com/oauth2/v1/certs";
                 })
                 .AddFacebook(options =>
                 {

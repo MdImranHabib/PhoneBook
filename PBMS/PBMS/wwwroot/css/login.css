@@ -82,11 +82,11 @@ Login page
 }
 
 .login .content .forget-form {
-  display: none;
+  /*display: none;*/
 }
 
 .login .content .register-form {
-  display: none;
+  /*display: none;*/
 }
 
 .login .content .form-title {
@@ -120,7 +120,8 @@ Login page
   padding-top: 3px;
 }
 
-.login-options .social-icons li a {
+/*.login-options .social-icons li a*/
+.login-options .social-icons p button{
   border-radius: 15px 15px 15px 15px !important;
   -moz-border-radius: 15px 15px 15px 15px !important;
   -webkit-border-radius: 15px 15px 15px 15px !important;
