@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MimeKit;
 using PBMS.Models;
 using PBMS.Models.ManageViewModels;
 using PBMS.Services;
@@ -124,7 +126,8 @@ namespace PBMS.Controllers
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
             var email = user.Email;
-            await _emailSender.SendEmailConfirmationAsync(email, callbackUrl);
+            //await _emailSender.SendEmailConfirmationAsync(email, callbackUrl);
+            SendEmail(email, callbackUrl);
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToAction(nameof(Index));
@@ -489,6 +492,43 @@ namespace PBMS.Controllers
             var model = new ShowRecoveryCodesViewModel { RecoveryCodes = recoveryCodes.ToArray() };
 
             return View(nameof(ShowRecoveryCodes), model);
+        }
+
+
+        public void SendEmail(string email, string url)
+        {
+
+            //Instantiate mime message
+            var message = new MimeMessage();
+
+            // Set from address
+            message.From.Add(new MailboxAddress("MassData Ltd.", "mihtestemail@gmail.com"));
+
+            // Set to address
+            message.To.Add(new MailboxAddress(email, email));
+
+            // Set the subject
+            message.Subject = "Email Confirmation";
+
+            // mail body
+            message.Body = new TextPart("plain")
+            {
+                Text = "Please click here" + url
+            };
+
+            // Configure and send email
+            using (var client = new SmtpClient())
+            {
+                client.Connect("smtp.gmail.com", 587, false);
+
+                client.Authenticate("mihtestemail@gmail.com", "Mihtestemail2@");
+
+                client.Send(message);
+
+                client.Disconnect(true);
+            }
+
+            return;
         }
 
         #region Helpers

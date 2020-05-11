@@ -34,6 +34,16 @@ namespace PBMS.Controllers
             return View();
         }
 
+        public IActionResult TestAdminDashboard()
+        {
+            return View();
+        }
+
+        public IActionResult TestDashboard()
+        {
+            return View();
+        }
+
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

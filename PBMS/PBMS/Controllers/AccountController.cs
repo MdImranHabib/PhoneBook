@@ -9,9 +9,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using PBMS.Data;
 using PBMS.Models;
 using PBMS.Models.AccountViewModels;
 using PBMS.Services;
@@ -24,19 +26,25 @@ namespace PBMS.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
+        private readonly ApplicationDbContext _context;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            RoleManager<IdentityRole> roleManager,
             IEmailSender emailSender,
-            ILogger<AccountController> logger)
+            ILogger<AccountController> logger,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _emailSender = emailSender;
             _logger = logger;
+            _context = context;
         }
 
         [TempData]
@@ -76,10 +84,10 @@ namespace PBMS.Controllers
                     SendEmail(model.Email, confirmationLink);
                     //await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);                 
 
-                    if (_signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
-                    {
-                        return RedirectToAction("Contact", "Home");
-                    }
+                    //if (_signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                    //{
+                    //    return RedirectToAction("Contact", "Home");
+                    //}
 
                     ViewBag.ErrorTitle = "Registration Successful";
                     ViewBag.ErrorMessage = "Before you can login, please confirm your email by clicking on the confirmation link we have emailed you";
@@ -114,6 +122,14 @@ namespace PBMS.Controllers
             }
 
             return Content("Email can not be confirmed");
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> RegisterIndex()
+        {
+            var users = await _context.Users.OrderBy(u => u.UserName).ToListAsync();
+            return View(users);
         }
 
 
@@ -155,8 +171,31 @@ namespace PBMS.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User logged in.");
-                    return RedirectToLocal(returnUrl);
+                    var userId = user.Id;
+                    var userRole = _context.UserRoles.Where(u => u.UserId == userId).FirstOrDefault();
+                    if(userRole != null)
+                    {
+                        var roleId = userRole.RoleId;
+                        var role = _context.Roles.Where(r => r.Id == roleId).FirstOrDefault();
+                        var roleType = role.Name;
+
+                        if (roleType == "Admin")
+                        {
+                            return RedirectToAction("TestAdminDashboard", "Home");
+                        }
+                        else
+                        {
+                            return RedirectToAction("TestDashboard", "Home");
+                        }
+                    }
+                                       
+                    else
+                    {
+                        return RedirectToAction("TestDashboard", "Home");
+                    }
+                    //_logger.LogInformation("User logged in.");
+                    //return RedirectToLocal(returnUrl);
+                                 
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -553,7 +592,244 @@ namespace PBMS.Controllers
             return;
         }
 
-                          
+
+        [HttpGet]
+        public IActionResult CreateRole()
+        {
+            ViewBag.msg = "";
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateRole(string rolename)
+        {
+            string msg = "";
+            if (!String.IsNullOrEmpty(rolename))
+            {
+                var exist = await _roleManager.RoleExistsAsync(rolename);
+                if (!exist)
+                {
+                    await _roleManager.CreateAsync(new IdentityRole { Name = rolename });
+                    msg = "Role" + " " + rolename + " " + "has been created.";
+                }
+                else
+                {
+                    msg = "Role" + " " + rolename + " " + "already exist.";
+                }
+            }
+            ViewBag.msg = msg;
+            return View("CreateRole");
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> RoleIndex()
+        {
+            return View(await _context.Roles.ToListAsync());
+        }
+
+
+        [HttpGet]
+        public IActionResult AssignRole()
+        {
+            var roles = _roleManager.Roles;
+            List<string> rolelist = new List<string>();
+
+            foreach (var item in roles)
+            {
+                rolelist.Add(item.Name);
+            }
+
+            ViewBag.roles = rolelist;
+            ViewBag.msg = "";
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AssignRole(string useremail, string rname)
+        {
+            string msg = "";
+            if (!String.IsNullOrEmpty(useremail))
+            {
+                ApplicationUser user = await _userManager.FindByEmailAsync(useremail);
+                if (!String.IsNullOrEmpty(rname))
+                {
+                    if (user != null)
+                    {
+                        IdentityResult result = await _userManager.AddToRoleAsync(user, rname);
+                        if (result.Succeeded)
+                        {
+                            msg = rname + " " + "role has been assigned to user" + " " + useremail + ".";
+                        }
+                        else
+                        {
+                            msg = "Sorry ! could not assigned role to user" + " " + useremail + ".";
+                        }
+                    }
+                    else
+                    {
+                        msg = "User" + " " + useremail + " " + "does not exist.";
+                    }
+                }
+                else
+                {
+                    msg = "Role" + " " + rname + " " + "does not exist.";
+                }
+            }
+            else
+            {
+                msg = "User email must be entered.";
+            }
+
+            ViewBag.msg = msg;
+            var roles = _roleManager.Roles;
+            List<string> rolelist = new List<string>();
+            foreach (var item in roles)
+            {
+                rolelist.Add(item.Name);
+            }
+
+            ViewBag.roles = rolelist;
+            return View("AssignRole");
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> EditRole(string id)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+
+            if (role == null)
+            {
+                return Content("Role with this Id is not available");
+            }
+
+            var model = new EditRoleViewModel
+            {
+                Id = role.Id,
+                RoleName = role.Name
+            };
+
+            foreach (var user in _userManager.Users)
+            {
+                if (await _userManager.IsInRoleAsync(user, role.Name))
+                {
+                    model.Users.Add(user.UserName);
+                }
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditRole(EditRoleViewModel model)
+        {
+            var role = await _roleManager.FindByIdAsync(model.Id);
+
+            if (role == null)
+            {
+                return Content("Role with this Id is not available");
+            }
+            else
+            {
+                role.Name = model.RoleName;
+                var result = await _roleManager.UpdateAsync(role);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("RoleIndex");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+                return View(model);
+            }
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> EditUsersInRole(string roleId)
+        {
+            ViewBag.roleId = roleId;
+
+            var role = await _roleManager.FindByIdAsync(roleId);
+            if (roleId == null)
+            {
+                return Content("There is no Role with this Id");
+            }
+
+            var model = new List<UserRoleViewModel>();
+
+            foreach (var user in _userManager.Users)
+            {
+                var userRoleViewModel = new UserRoleViewModel
+                {
+                    UserId = user.Id,
+                    UserName = user.UserName
+                };
+
+                if (await _userManager.IsInRoleAsync(user, role.Name))
+                {
+                    userRoleViewModel.IsSelected = true;
+                }
+                else
+                {
+                    userRoleViewModel.IsSelected = false;
+                }
+                model.Add(userRoleViewModel);
+            }
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditUsersInRole(List<UserRoleViewModel> model, string roleId)
+        {
+            var role = await _roleManager.FindByIdAsync(roleId);
+            if (roleId == null)
+            {
+                return Content("There is no Role with this Id");
+            }
+
+            for (int i = 0; i < model.Count; i++)
+            {
+                var user = await _userManager.FindByIdAsync(model[i].UserId);
+
+                IdentityResult result = null;
+
+                if (model[i].IsSelected && !(await _userManager.IsInRoleAsync(user, role.Name)))
+                {
+                    result = await _userManager.AddToRoleAsync(user, role.Name);
+                }
+                else if (!model[i].IsSelected && await _userManager.IsInRoleAsync(user, role.Name))
+                {
+                    result = await _userManager.RemoveFromRoleAsync(user, role.Name);
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (result.Succeeded)
+                {
+                    if (i < (model.Count - 1))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        return RedirectToAction("EditRole", new { Id = roleId });
+
+                    }
+                }
+            }
+
+            return RedirectToAction("EditRole", new { Id = roleId });
+        }
+
+
         [HttpGet]
         public IActionResult AccessDenied()
         {
