@@ -24,6 +24,7 @@
                         </div>
                     }
                 </div>
+                <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
                     <input type="submit" value="Update" asp-route-id="@userId" class="btn btn-success" />
                     <a asp-action="EditUser" asp-route-id="@userId" class="btn btn-danger">Cancle</a>

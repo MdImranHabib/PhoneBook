@@ -39,7 +39,7 @@ namespace PBMS
             services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddMvc();
-
+            
             services.AddAuthentication()
                 .AddGoogle(options =>
                 {
@@ -55,6 +55,11 @@ namespace PBMS
                     options.AppId = "296591604668015";
                     options.AppSecret = "7655fa2414c75058dd17528be38e3be6";
                 });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("DeleteRolePolicy", policy => policy.RequireClaim("Delete Role"));
+            });
 
             services.AddDistributedMemoryCache();
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EFCore.BulkExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -64,6 +65,31 @@ namespace PBMS.Controllers
             }
             return View(contact);
         }
+
+        //[HttpPost]
+        //public IActionResult BulkDataInsert()
+        //{
+        //    List<Contact> contacts = new List<Contact>();
+           
+        //    for (int i = 1; i < 10; i++)
+        //    {
+        //        Contact contact = new Contact()
+        //        {
+        //            Name = "Contact" + i,
+        //            Address = "Address" + i,
+        //            Email = "demo" + i + "@gmail.com",
+        //            Number = "0160000000" + i,
+        //            Occupation = "Occupation" + i
+        //        };
+
+        //        contacts.Add(contact);
+        //    }
+
+        //    _context.BulkInsert(contacts);
+
+        //    return RedirectToAction("Index");
+        //}
+      
 
         // GET: Contacts/Edit/5
         public async Task<IActionResult> Edit(int? id)
