@@ -6,7 +6,7 @@
 }
 
 <div class="well">
-    <h3 class="alert bg-primary text-center">Registered User Info</h3>
+    <h3 class="alert bg-primary text-center">User List</h3>
 
     <table class="table table-bordered table-hover table-condensed" id="myTable">
         <thead>
@@ -18,7 +18,7 @@
                 <th>
                     Email
                 </th>
-
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -34,6 +34,12 @@
                         <td>
                             @Html.DisplayFor(modelItem => item.Email)
                         </td>
+                        <td>
+                            <form asp-action="DeleteUser" asp-route-id="@item.Id" method="post">
+                                <a asp-action="EditUser" asp-controller="Account" asp-route-id="@item.Id" class="btn btn-warning btn-xs">Edit</a>
+                                <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete user : @item.UserName')">Delete</button>
+                            </form>                           
+                        </td>
                     </tr>
                 }
                 else
@@ -45,6 +51,12 @@
                         </td>
                         <td>
                             @Html.DisplayFor(modelItem => item.Email)
+                        </td>
+                        <td>
+                            <form asp-action="DeleteUser" asp-route-id="@item.Id" method="post">
+                                <a asp-action="EditUser" asp-controller="Account" asp-route-id="@item.Id" class="btn btn-warning btn-xs">Edit</a>
+                                <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete user : @item.UserName')">Delete</button>
+                            </form>                            
                         </td>
                     </tr>
                 }

@@ -56,8 +56,8 @@ namespace PBMS.Controllers
         public IActionResult Register(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
-            ViewBag.ErrorTitle = "";
-            ViewBag.ErrorMessage = "";
+            ViewBag.MessageTitle = "";
+            ViewBag.MessageBody = "";
             return View();
         }
 
@@ -89,8 +89,8 @@ namespace PBMS.Controllers
                     //    return RedirectToAction("Contact", "Home");
                     //}
 
-                    ViewBag.ErrorTitle = "Registration Successful";
-                    ViewBag.ErrorMessage = "Before you can login, please confirm your email by clicking on the confirmation link we have emailed you";
+                    ViewBag.MessageTitle = "Registration Successful";
+                    ViewBag.MessageBody = "Before you can login, please confirm your email by clicking on the confirmation link we have emailed you";
                     return View("Register");
                 }
                 AddErrors(result);
@@ -126,10 +126,166 @@ namespace PBMS.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> RegisterIndex()
+        public async Task<IActionResult> UserList()
         {
             var users = await _context.Users.OrderBy(u => u.UserName).ToListAsync();
             return View(users);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> EditUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if(user == null)
+            {
+                //ViewBag.ErrorMessage = $"User with id = {id} can not be found";
+                //return View("NotFound");
+                return Content("User not found");
+            }
+
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var model = new EditUserViewModel
+            {
+                Id = user.Id,
+                Email = user.Email,
+                UserName = user.UserName,
+                Claims = userClaims.Select(c => c.Value).ToList(),
+                Roles = userRoles.ToList()
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditUser(EditUserViewModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.Id);
+
+            if (user == null)
+            {
+                //ViewBag.ErrorMessage = $"User with id = {id} can not be found";
+                //return View("NotFound");
+                return Content("User not found");
+            }
+            else
+            {
+                user.Email = model.Email;
+                user.UserName = model.UserName;
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if(result.Succeeded)
+                {
+                    return RedirectToAction("UserList");
+                }
+
+                foreach(var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
+                return View(model);
+            }
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> ManageUserRoles(string id)
+        {
+            ViewBag.UserId = id;
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                return Content("User not found");
+            }
+
+            var model = new List<UserRolesViewModel>();
+
+            foreach(var role in _roleManager.Roles)
+            {
+                var userRolesViewModel = new UserRolesViewModel
+                {
+                    RoleId = role.Id,
+                    RoleName = role.Name
+                };
+
+                if(await _userManager.IsInRoleAsync(user, role.Name))
+                {
+                    userRolesViewModel.IsSelected = true;
+                }
+                else
+                {
+                    userRolesViewModel.IsSelected = false;
+                }
+
+                model.Add(userRolesViewModel);
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ManageUserRoles(List<UserRolesViewModel> model, string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                return Content("User not found");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var result = await _userManager.RemoveFromRolesAsync(user, roles);
+
+            if(!result.Succeeded)
+            {
+                ModelState.AddModelError("", "Can not remove user's existing roles");
+                return View(model);
+            }
+
+            result = await _userManager.AddToRolesAsync(user, model.Where(x => x.IsSelected).Select(y => y.RoleName));
+
+            if(!result.Succeeded)
+            {
+                ModelState.AddModelError("", "Can not add selected roles to user");
+                return View(model);
+            }
+
+            return RedirectToAction("EditUser", new { Id = id });
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if(user == null)
+            {
+                return Content("User not found");
+            }
+            else
+            {
+                var result = await _userManager.DeleteAsync(user);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("UserList");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
+                return View("UserList");
+            }
         }
 
 
@@ -173,7 +329,7 @@ namespace PBMS.Controllers
                 {
                     var userId = user.Id;
                     var userRole = _context.UserRoles.Where(u => u.UserId == userId).FirstOrDefault();
-                    if(userRole != null)
+                    if (userRole != null)
                     {
                         var roleId = userRole.RoleId;
                         var role = _context.Roles.Where(r => r.Id == roleId).FirstOrDefault();
@@ -188,14 +344,15 @@ namespace PBMS.Controllers
                             return RedirectToAction("TestDashboard", "Home");
                         }
                     }
-                                       
+
                     else
                     {
                         return RedirectToAction("TestDashboard", "Home");
                     }
+
                     //_logger.LogInformation("User logged in.");
                     //return RedirectToLocal(returnUrl);
-                                 
+
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -746,6 +903,34 @@ namespace PBMS.Controllers
                     ModelState.AddModelError("", error.Description);
                 }
                 return View(model);
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteRole(string id)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+
+            if (role == null)
+            {
+                return Content("Role not found");
+            }
+            else
+            {
+                var result = await _roleManager.DeleteAsync(role);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("RoleIndex");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
+                return View("RoleIndex");
             }
         }
 
