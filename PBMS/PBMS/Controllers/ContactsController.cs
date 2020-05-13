@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using EFCore.BulkExtensions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using PBMS.Data;
 using PBMS.Models;
 
@@ -14,10 +21,12 @@ namespace PBMS.Controllers
     public class ContactsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
-        public ContactsController(ApplicationDbContext context)
+        public ContactsController(ApplicationDbContext context, IHostingEnvironment hostingEnvironment)
         {
             _context = context;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         // GET: Contacts
@@ -66,11 +75,84 @@ namespace PBMS.Controllers
             return View(contact);
         }
 
+
+        
+        public ActionResult InsertBulkDatafromExcelfile()
+        {
+            IFormFile file = Request.Form.Files[0];
+            string folderName = "UploadExcel";
+            string webRootPath = _hostingEnvironment.WebRootPath;
+            string newPath = Path.Combine(webRootPath, folderName);
+            StringBuilder sb = new StringBuilder();
+
+            if (!Directory.Exists(newPath))
+            {
+                Directory.CreateDirectory(newPath);
+            }
+
+            if (file.Length > 0)
+            {
+                string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+                ISheet sheet;
+                string fullPath = Path.Combine(newPath, file.FileName);
+
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                    stream.Position = 0;
+
+                    if (sFileExtension == ".xls")
+                    {
+                        HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+                        sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook  
+                    }
+                    else
+                    {
+                        XSSFWorkbook xssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+                        sheet = xssfwb.GetSheetAt(0); //get first sheet from workbook   
+                    }
+
+                    IRow headerRow = sheet.GetRow(0); //Get Header Row
+                    int cellCount = headerRow.LastCellNum;
+                    
+                    List<Contact> contacts = new List<Contact>();                    
+
+                    for (int i = (sheet.FirstRowNum + 1); i <= sheet.LastRowNum; i++) //Read Excel File
+                    {
+                        IRow row = sheet.GetRow(i);
+
+                        if (row == null) continue;
+
+                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+
+                        var firstCell = row.FirstCellNum;
+
+                        Contact contact = new Contact
+                        {
+                            Name = row.GetCell(firstCell).ToString(),
+                            Address = row.GetCell(firstCell + 1).ToString(),
+                            Email = row.GetCell(firstCell + 2).ToString(),
+                            Number = row.GetCell(firstCell + 3).ToString(),
+                            Occupation = row.GetCell(firstCell + 4).ToString()
+                        };
+
+                        contacts.Add(contact);
+                    }
+
+                    _context.BulkInsert(contacts);
+
+                    sb.Append("<h5> Insertion Successfull!</h5>");
+                }
+            }
+
+            return Content(sb.ToString());
+        }
+
         //[HttpPost]
         //public IActionResult BulkDataInsert()
         //{
         //    List<Contact> contacts = new List<Contact>();
-           
+
         //    for (int i = 1; i < 10; i++)
         //    {
         //        Contact contact = new Contact()
@@ -89,7 +171,7 @@ namespace PBMS.Controllers
 
         //    return RedirectToAction("Index");
         //}
-      
+
 
         // GET: Contacts/Edit/5
         public async Task<IActionResult> Edit(int? id)
