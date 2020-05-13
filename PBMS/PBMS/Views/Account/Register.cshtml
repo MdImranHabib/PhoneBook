@@ -49,9 +49,11 @@
         <div class="register-form">
             <form asp-action="Register" method="post">
                 <h3>Sign Up</h3>
-                <h4 class="text-success">@ViewBag.MessageTitle</h4>
-                <h5 class="text-info">@ViewBag.MessageBody</h5>
-                <hr />
+                <br />
+                <h4 class="text-info">@ViewBag.MessageTitle</h4>
+                <h5 class="text-danger">@ViewBag.MessageBody</h5>
+                <br />
+                <div asp-validation-summary="All" class="text-danger"></div>
                 <p class="hint">
                     Enter your account details below:
                 </p>

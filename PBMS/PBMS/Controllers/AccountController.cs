@@ -358,7 +358,8 @@ namespace PBMS.Controllers
             if (result.Succeeded)
             {
                 _logger.LogInformation("User logged in with {Name} provider.", info.LoginProvider);
-                return RedirectToLocal(returnUrl);
+                //return RedirectToLocal(returnUrl);
+                return RedirectToAction("TestDashboard", "Home");
             }
             else
             {
@@ -382,7 +383,8 @@ namespace PBMS.Controllers
                     await _userManager.AddLoginAsync(user, info);
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    return RedirectToLocal(returnUrl);
+                    // return RedirectToLocal(returnUrl);
+                    return RedirectToAction("TestDashboard", "Home");
                 }
             }
             if (result.IsLockedOut)
