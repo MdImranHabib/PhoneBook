@@ -51,10 +51,18 @@ namespace PBMS.Controllers
             }
 
             return View(contact);
+        }      
+
+        public JsonResult IsNumberExist(string number)
+        {
+            bool result = true;
+
+            if (_context.Contacts.Any(c => c.Number == number))
+            {
+                result = false;
+            }
+            return Json(result);
         }
-
-
-
 
         // GET: Contacts/Create
         public IActionResult Create()

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -19,13 +20,14 @@ namespace PBMS.Models
 
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
-        [RegularExpression("^[a-zA-Z0-9_\\.-]+@([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$", ErrorMessage = "Invalid Email")]
+        [RegularExpression("^[a-zA-Z0-9_\\.-]+@([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$", ErrorMessage = "Invalid Email")]       
         public string Email { get; set; }
 
         [Required]
         [DataType(DataType.PhoneNumber)]
         [Phone]
         [StringLength(20, ErrorMessage = "Contact number can't be Greater than 20 Characters")]
+        [Remote(action: "IsNumberExist", controller: "Contacts", ErrorMessage = "This number already exist. Try another")]
         public string Number { get; set; }
 
         [StringLength(50, ErrorMessage = "Occupation can't be Greater than 50 Characters")]

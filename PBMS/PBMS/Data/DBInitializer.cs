@@ -48,7 +48,8 @@ namespace PBMS.Data
                 var user = new ApplicationUser
                 {
                     UserName = "admin@gmail.com",
-                    Email = "admin@gmail.com"
+                    Email = "admin@gmail.com",
+                    EmailConfirmed = true
                 };
 
                 var result = await userManager.CreateAsync(user);
