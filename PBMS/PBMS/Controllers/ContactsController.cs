@@ -53,6 +53,9 @@ namespace PBMS.Controllers
             return View(contact);
         }
 
+
+
+
         // GET: Contacts/Create
         public IActionResult Create()
         {
@@ -76,7 +79,6 @@ namespace PBMS.Controllers
         }
 
 
-        
         public ActionResult InsertBulkDatafromExcelfile()
         {
             IFormFile file = Request.Form.Files[0];
@@ -114,62 +116,139 @@ namespace PBMS.Controllers
 
                     IRow headerRow = sheet.GetRow(0); //Get Header Row
                     int cellCount = headerRow.LastCellNum;
-                    
-                    List<Contact> contacts = new List<Contact>();                    
 
-                    for (int i = (sheet.FirstRowNum + 1); i <= sheet.LastRowNum; i++) //Read Excel File
+                    for(int i = 0; i < cellCount; i++)
                     {
-                        IRow row = sheet.GetRow(i);
+                        var cellName = headerRow.GetCell(i).ToString();
 
-                        if (row == null) continue;
-
-                        if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
-
-                        var firstCell = row.FirstCellNum;
-
-                        Contact contact = new Contact
+                        if(cellName == "Number")
                         {
-                            Name = row.GetCell(firstCell).ToString(),
-                            Address = row.GetCell(firstCell + 1).ToString(),
-                            Email = row.GetCell(firstCell + 2).ToString(),
-                            Number = row.GetCell(firstCell + 3).ToString(),
-                            Occupation = row.GetCell(firstCell + 4).ToString()
-                        };
+                            List<Contact> contacts = new List<Contact>();
 
-                        contacts.Add(contact);
-                    }
+                            for (int j = (sheet.FirstRowNum + 1); j <= sheet.LastRowNum; j++) //Read Excel File
+                            {
+                                IRow row = sheet.GetRow(j);
 
-                    _context.BulkInsert(contacts);
+                                if (row == null) continue;
 
-                    sb.Append("<h5> Insertion Successfull!</h5>");
+                                if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+
+                                if (row.GetCell(i) == null || row.GetCell(i).ToString() == "") continue;
+                                
+                                if(!_context.Contacts.Any(c => c.Number == row.GetCell(i).ToString()))
+                                {
+                                    Contact contact = new Contact
+                                    {                                        
+                                        Number = row.GetCell(i).ToString()
+                                    };
+
+                                    for(int k = 0; k < cellCount; k++)
+                                    {
+                                        var celName = headerRow.GetCell(k).ToString();
+
+                                        if(celName == "Name")
+                                        {
+                                            contact.Name = row.GetCell(k).ToString();
+                                        }
+                                        else if(celName == "Address")
+                                        {
+                                            contact.Address = row.GetCell(k).ToString();
+                                        }
+                                        else if(celName == "Email")
+                                        {
+                                            contact.Email = row.GetCell(k).ToString();
+                                        }
+                                        else if (celName == "Occupation")
+                                        {
+                                            contact.Occupation = row.GetCell(k).ToString();
+                                        }                                       
+                                    }
+
+                                    contacts.Add(contact);
+                                }                                                           
+                            }
+
+                            _context.BulkInsert(contacts);
+
+                            sb.Append("<h5> Insertion Successfull!</h5>");
+                        }
+                    }                                      
                 }
             }
 
             return Content(sb.ToString());
         }
 
-        //[HttpPost]
-        //public IActionResult BulkDataInsert()
+
+        //public ActionResult InsertBulkDatafromExcelfile()
         //{
-        //    List<Contact> contacts = new List<Contact>();
+        //    IFormFile file = Request.Form.Files[0];
+        //    string folderName = "UploadExcel";
+        //    string webRootPath = _hostingEnvironment.WebRootPath;
+        //    string newPath = Path.Combine(webRootPath, folderName);
+        //    StringBuilder sb = new StringBuilder();
 
-        //    for (int i = 1; i < 10; i++)
+        //    if (!Directory.Exists(newPath))
         //    {
-        //        Contact contact = new Contact()
-        //        {
-        //            Name = "Contact" + i,
-        //            Address = "Address" + i,
-        //            Email = "demo" + i + "@gmail.com",
-        //            Number = "0160000000" + i,
-        //            Occupation = "Occupation" + i
-        //        };
-
-        //        contacts.Add(contact);
+        //        Directory.CreateDirectory(newPath);
         //    }
 
-        //    _context.BulkInsert(contacts);
+        //    if (file.Length > 0)
+        //    {
+        //        string sFileExtension = Path.GetExtension(file.FileName).ToLower();
+        //        ISheet sheet;
+        //        string fullPath = Path.Combine(newPath, file.FileName);
 
-        //    return RedirectToAction("Index");
+        //        using (var stream = new FileStream(fullPath, FileMode.Create))
+        //        {
+        //            file.CopyTo(stream);
+        //            stream.Position = 0;
+
+        //            if (sFileExtension == ".xls")
+        //            {
+        //                HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
+        //                sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook  
+        //            }
+        //            else
+        //            {
+        //                XSSFWorkbook xssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
+        //                sheet = xssfwb.GetSheetAt(0); //get first sheet from workbook   
+        //            }
+
+        //            IRow headerRow = sheet.GetRow(0); //Get Header Row
+        //            int cellCount = headerRow.LastCellNum;
+
+        //            List<Contact> contacts = new List<Contact>();                    
+
+        //            for (int i = (sheet.FirstRowNum + 1); i <= sheet.LastRowNum; i++) //Read Excel File
+        //            {
+        //                IRow row = sheet.GetRow(i);
+
+        //                if (row == null) continue;
+
+        //                if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
+
+        //                var firstCell = row.FirstCellNum;
+
+        //                Contact contact = new Contact
+        //                {
+        //                    Name = row.GetCell(firstCell).ToString(),
+        //                    Address = row.GetCell(firstCell + 1).ToString(),
+        //                    Email = row.GetCell(firstCell + 2).ToString(),                          
+        //                    Number = row.GetCell(firstCell + 3).ToString(),
+        //                    Occupation = row.GetCell(firstCell + 4).ToString()
+        //                };
+
+        //                contacts.Add(contact);
+        //            }
+
+        //            _context.BulkInsert(contacts);
+
+        //            sb.Append("<h5> Insertion Successfull!</h5>");
+        //        }
+        //    }
+
+        //    return Content(sb.ToString());
         //}
 
 
