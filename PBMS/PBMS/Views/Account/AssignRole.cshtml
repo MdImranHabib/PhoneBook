@@ -1,32 +1,54 @@
 ﻿
 @{
     ViewData["Title"] = "AssignRole";
-    Layout = "~/Views/Shared/TestAdminLayout.cshtml";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
 }
 
-
-<div class="well">
-    <h3 class="alert bg-primary text-center">Assign Role</h3>
+<div class="page-content">
+    <!-- BEGIN PAGE HEADER-->
+    <h3 class="page-title">
+        Assign Role <small>assign role</small>
+    </h3>
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="fa fa-home"></i>
+                <a asp-action="AdminDashboard" asp-controller="Home">Home</a>
+                <i class="fa fa-angle-right"></i>
+            </li>          
+            <li>
+                <a asp-action="AssignRole" asp-controller="Account">Assign Role</a>
+            </li>
+        </ul>
+    </div>
+    <!-- END PAGE HEADER-->
+    <!-- BEGIN PAGE CONTENT-->
     <div class="row">
-        <div class="col-md-4 col-lg-offset-4">
-            <div><h4 class="text-primary">@ViewBag.msg</h4></div>
-            <form asp-controller="Account" asp-action="AssignRole" method="post">
-                <div class="form-group">
-                    <label>User Email</label>
-                    <input type="email" class="form-control" name="useremail" value="" placeholder="Please type user email." />
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-4 col-lg-offset-4">
+                    <div><h4 class="text-primary">@ViewBag.msg</h4></div>
+                    <form asp-controller="Account" asp-action="AssignRole" method="post">
+                        <div class="form-group">
+                            <label>User Email</label>
+                            <input type="email" class="form-control" name="useremail" value="" placeholder="Please type user email." />
+                        </div>
+                        <div class="form-group">
+                            <label>User Role</label>
+                            <select class="form-control" name="rname">
+                                @foreach (var item in ViewBag.roles)
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            </select>
+                        </div>
+                        <input type="submit" class="form-control btn btn-success" value="Assign Role" />
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label>User Role</label>
-                    <select class="form-control" name="rname">
-                        @foreach (var item in ViewBag.roles)
-                        {
-                            <option value="@item">@item</option>
-                        }
-                    </select>
-                </div>
-                <input type="submit" class="form-control btn btn-success" value="Assign Role" />
-            </form>
+            </div>
         </div>
     </div>
+    <!-- END PAGE CONTENT-->
 </div>
+
 

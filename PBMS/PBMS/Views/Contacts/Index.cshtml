@@ -2,66 +2,98 @@
 
 @{
     ViewData["Title"] = "Index";
-    Layout = "~/Views/Shared/TestAdminLayout.cshtml";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
     var Serial = 1;
 }
 
-<div class="well">
-    <h3 class="alert bg-primary text-center">Contact List</h3>
+<div class="page-content">
+    <!-- BEGIN PAGE HEADER-->
+    <h3 class="page-title">
+        Contact List <small>contact list</small>
+    </h3>
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="fa fa-home"></i>
+                <a asp-action="AdminDashboard" asp-controller="Home">Home</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            @*<li>
+                <a href="#">Page Layouts</a>
+                <i class="fa fa-angle-right"></i>
+            </li>*@
+            <li>
+                <a asp-action="Index" asp-controller="contacts">Contact List</a>
+            </li>
+        </ul>
+    </div>
+    <!-- END PAGE HEADER-->
+    <!-- BEGIN PAGE CONTENT-->
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-bordered table-hover table-condensed" id="myTable">
+                <thead>
+                    <tr class="bg-primary">
+                        <th>SL No.</th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Name)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Address)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Email)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Number)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Occupation)
+                        </th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@Serial</td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Address)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Email)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Number)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Occupation)
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-xs">Edit</a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-xs">Details</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-xs">Delete</a>
+                            </td>
+                        </tr>
+                        Serial++;
+                    }
+                </tbody>
+            </table>
 
-    <table class="table table-bordered table-hover table-condensed" id="myTable">
-        <thead>
-            <tr class="bg-primary">
-                <th>SL No.</th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Address)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Email)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Number)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Occupation)
-                </th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@Serial</td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Name)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Address)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Email)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Number)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Occupation)
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-xs">Edit</a>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-xs">Details</a>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-xs">Delete</a>
-                    </td>
-                </tr>
-                Serial++;
-            }
-        </tbody>
-    </table>
+            <div>
+                <form asp-action="DeleteAllContacts" asp-controller="Contacts" method="post">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete all the records?">Delete All</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- END PAGE CONTENT-->
 </div>
+
 
 
 @section Scripts {

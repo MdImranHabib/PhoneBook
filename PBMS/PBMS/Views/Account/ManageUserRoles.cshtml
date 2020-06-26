@@ -1,35 +1,66 @@
 ﻿@model List<UserRolesViewModel>
 @{
     ViewData["Title"] = "Manage User Roles";
-    Layout = "~/Views/Shared/TestAdminLayout.cshtml";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
 
     var userId = ViewBag.UserId;
 }
 
-<div class="well">
-    <h3 class="alert bg-primary text-center">Manage User Roles</h3>
-    <h4 class="text-warning">Add or Remove Roles from this User</h4>
-    <hr />
+<div class="page-content">
+    <!-- BEGIN PAGE HEADER-->
+    <h3 class="page-title">
+        Manage User Roles <small>manage user roles</small>
+    </h3>
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="fa fa-home"></i>
+                <a asp-action="AdminDashboard" asp-controller="Home">Home</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <a asp-action="UserList" asp-controller="Account">User List</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <a asp-action="EditUser" asp-controller="Account" asp-route-id="@userId">Edit User</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <a asp-action="ManageUserRoles" asp-controller="Account" asp-route-id="@userId">Manage User Roles</a>
+            </li>
+        </ul>
+    </div>
+    <!-- END PAGE HEADER-->
+    <!-- BEGIN PAGE CONTENT-->
     <div class="row">
-        <div class="col-md-4">
-            <form asp-action="ManageUserRoles" method="post">
-                <div class="form-group">
-                    @for (int i = 0; i < Model.Count; i++)
-                    {
-                        <div>
-                            <input type="hidden" asp-for="@Model[i].RoleId" />
-                            <input type="hidden" asp-for="@Model[i].RoleName" />
-                            <input asp-for="@Model[i].IsSelected" class="checkbox-inline" />
-                            <label asp-for="@Model[i].IsSelected" class="checkbox-inline">@Model[i].RoleName</label>
+        <div class="col-md-12">
+            <h4 class="text-warning">Add or Remove Roles from this User</h4>
+            <hr />
+            <div class="row">
+                <div class="col-md-4">
+                    <form asp-action="ManageUserRoles" method="post">
+                        <div class="form-group">
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                <div>
+                                    <input type="hidden" asp-for="@Model[i].RoleId" />
+                                    <input type="hidden" asp-for="@Model[i].RoleName" />
+                                    <input asp-for="@Model[i].IsSelected" class="checkbox-inline" />
+                                    <label asp-for="@Model[i].IsSelected" class="checkbox-inline">@Model[i].RoleName</label>
+                                </div>
+                            }
                         </div>
-                    }
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                        <div class="form-group">
+                            <input type="submit" value="Update" asp-route-id="@userId" class="btn btn-success" />
+                            <a asp-action="EditUser" asp-route-id="@userId" class="btn btn-danger">Cancle</a>
+                        </div>
+                    </form>
                 </div>
-                <div asp-validation-summary="All" class="text-danger"></div>
-                <div class="form-group">
-                    <input type="submit" value="Update" asp-route-id="@userId" class="btn btn-success" />
-                    <a asp-action="EditUser" asp-route-id="@userId" class="btn btn-danger">Cancle</a>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
+    <!-- END PAGE CONTENT-->
 </div>
+

@@ -2,89 +2,109 @@
 
 @{
     ViewData["Title"] = "Create";
-    Layout = "~/Views/Shared/TestAdminLayout.cshtml";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
 }
 
-
-<div class="well">
-    <h3 class="alert bg-primary text-center">Add New Contact</h3>
-    <hr />
-    <div class="row">
-        <h4 class="alert bg-info text-info text-center">Add Single Contact</h4>
-        <hr />
-        <div class="col-md-12">
-            <form asp-action="Create" class="form-inline">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group">
-                    <label asp-for="Name" class="control-label"></label>
-                    <input asp-for="Name" class="form-control" />
-                    <span asp-validation-for="Name" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Address" class="control-label"></label>
-                    <input asp-for="Address" class="form-control" />
-                    <span asp-validation-for="Address" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Email" class="control-label"></label>
-                    <input asp-for="Email" class="form-control" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Number" class="control-label"></label>
-                    <input asp-for="Number" class="form-control" />
-                    <span asp-validation-for="Number" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Occupation" class="control-label"></label>
-                    <input asp-for="Occupation" class="form-control" />
-                    <span asp-validation-for="Occupation" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <input type="submit" value="Submit" class="btn btn-success" />
-                </div>
-            </form>
-        </div>
+<div class="page-content">
+    <!-- BEGIN PAGE HEADER-->
+    <h3 class="page-title">
+        Add New Contact <small>add new contact</small>
+    </h3>
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="fa fa-home"></i>
+                <a asp-action="AdminDashboard" asp-controller="Home">Home</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            @*<li>
+                <a href="#">Page Layouts</a>
+                <i class="fa fa-angle-right"></i>
+            </li>*@
+            <li>
+                <a asp-action="Create" asp-controller="Contacts">Add New Contact</a>
+            </li>
+        </ul>
     </div>
-
-    <hr />
+    <!-- END PAGE HEADER-->
+    <!-- BEGIN PAGE CONTENT-->
 
     <div class="row">
-        <h4 class="alert bg-info text-info text-center">Add Multiple Contact</h4>
-        <hr />
         <div class="col-md-12">
-            <form>
-                @*asp-controller="Home" asp-action="Export"*@
-                <div class="row">
-                    <h5 id="divPrint" class="text-info"></h5>
-                </div>
-
-                <div class="clearfix">&nbsp;</div>
-
-                <div class="row">
-                    <div class="col-md-4">
-                        <input type="file" id="fileupload" name="files" class="form-control" />
+            <h4 class="alert bg-info text-info text-center">Add Single Contact</h4>
+            <hr />
+            <div>
+                <form asp-action="Create" class="form-inline">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="Name" class="control-label"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
-                    <div class="col-md-3">
-                        <input type="button" name="Upload" value="Submit" id="btnupload" class="btn btn-success" />
-                        @*<a href="@Url.Action("Download", "Home")">Download</a>*@
+                    <div class="form-group">
+                        <label asp-for="Address" class="control-label"></label>
+                        <input asp-for="Address" class="form-control" />
+                        <span asp-validation-for="Address" class="text-danger"></span>
                     </div>
-                    @*<div class="col-md-5">
-                            <input type="submit" name="Export" value="Create and Export" id="btnExport" class="btn btn-primary" asp-action="Export" asp-controller="Home">
-                        </div>*@
-                </div>
+                    <div class="form-group">
+                        <label asp-for="Email" class="control-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Number" class="control-label"></label>
+                        <input type="tel" asp-for="Number" class="form-control" />
+                        <span asp-validation-for="Number" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Occupation" class="control-label"></label>
+                        <input asp-for="Occupation" class="form-control" />
+                        <span asp-validation-for="Occupation" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Submit" class="btn btn-success" />
+                    </div>
+                </form>
+            </div>
 
-            </form>
+            <hr />
+
+            <h4 class="alert bg-info text-info text-center">Add Multiple Contact</h4>
+            <hr />
+            <div>
+                <form>
+                    @*asp-controller="Home" asp-action="Export"*@
+                    <div class="row">
+                        <h5 id="divPrint" class="text-info"></h5>
+                    </div>
+
+                    <div class="clearfix">&nbsp;</div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="file" id="fileupload" name="files" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <input type="button" name="Upload" value="Submit" id="btnupload" class="btn btn-success" />
+                            @*<a href="@Url.Action("Download", "Home")">Download</a>*@
+                        </div>
+                        @*<div class="col-md-5">
+                        <input type="submit" name="Export" value="Create and Export" id="btnExport" class="btn btn-primary" asp-action="Export" asp-controller="Home">
+                    </div>*@
+                    </div>
+
+                </form>
+            </div>
+
+            <hr />
+
+            <div>
+                <a asp-action="Index" class="btn btn-primary">Back to List</a>
+            </div>
         </div>
     </div>
-
-    <hr />
-
-    <div>
-        <a asp-action="Index" class="btn btn-primary">Back to List</a>
-    </div>
-
 </div>
+
 
 @section Scripts{
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

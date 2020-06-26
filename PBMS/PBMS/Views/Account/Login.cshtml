@@ -14,7 +14,7 @@
   
     <div class="logo">
         <a asp-action="Login" asp-controller="Account">
-            <img src="~/images/logo-big.png" alt="Logo" />
+            <img src="~/AdminPanel/assets/admin/layout/img/logo-big.png" alt="Logo" />
         </a>
     </div>
     <div class="content">
@@ -65,7 +65,7 @@
                     }
                     else
                     {
-                        <form asp-action="ExternalLogin" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
+                        <form asp-action="ExternalLogin" asp-controller="Account" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
                             <div class="social-icons">
                                 @foreach (var provider in loginProviders)
                                 {
@@ -76,21 +76,21 @@
                                                     title="Log in using your @provider.DisplayName account"></button>
                                         </p>
                                     }
-                                    if (provider.Name == "Facebook")
+                                    else if (provider.Name == "Facebook")
                                     {
                                         <p>
                                             <button type="submit" class="social-icon-color facebook" name="provider" value="@provider.Name"
                                                     title="Log in using your @provider.DisplayName account"></button>
                                         </p>
                                     }
-                                    if (provider.Name == "Twitter")
+                                    else if (provider.Name == "Twitter")
                                     {
                                         <p>
                                             <button type="submit" class="social-icon-color twitter" name="provider" value="@provider.Name"
                                                     title="Log in using your @provider.DisplayName account"></button>
                                         </p>
                                     }
-                                    if (provider.Name == "LinkedIn")
+                                    else if (provider.Name == "LinkedIn")
                                     {
                                         <p>
                                             <button type="submit" class="social-icon-color linkedin" name="provider" value="@provider.Name"

@@ -1,73 +1,100 @@
 ﻿@model IEnumerable<IdentityRole>
 @{
     ViewData["Title"] = "RoleIndex";
-    Layout = "~/Views/Shared/TestAdminLayout.cshtml";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
     var i = 1;
 }
 
-
-<div class="well">
-    <h3 class="alert bg-primary text-center">Role List</h3>
-    <p>
-        <a asp-action="CreateRole" class="btn btn-success">Add New</a>
-    </p>
-    <table class="table table-bordered table-hover table-condensed" id="myTable">
-        <thead>
-            <tr class="bg-primary">
-                <th>#.</th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Id)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                if (i % 2 == 0)
-                {
-                    <tr class="warning">
-                        <td>@i.</td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Id)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Name)
-                        </td>
-                        <td>
-                            <form asp-action="DeleteRole" asp-route-id="@item.Id" method="post">
-                                <a asp-action="EditRole" asp-controller="Account" asp-route-id="@item.Id" class="btn btn-warning btn-xs">Edit</a>
-                                <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete role : @item.Name')">Delete</button>
-                            </form>
-                        </td>
+<div class="page-content">
+    <!-- BEGIN PAGE HEADER-->
+    <h3 class="page-title">
+        Role List <small>role list</small>
+    </h3>
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="fa fa-home"></i>
+                <a asp-action="AdminDashboard" asp-controller="Home">Home</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            @*<li>
+                <a href="#">Page Layouts</a>
+                <i class="fa fa-angle-right"></i>
+            </li>*@
+            <li>
+                <a asp-action="RoleIndex" asp-controller="Account">Role List</a>
+            </li>
+        </ul>
+    </div>
+    <!-- END PAGE HEADER-->
+    <!-- BEGIN PAGE CONTENT-->
+    <div class="row">
+        <div class="col-md-12">
+            <p>
+                <a asp-action="CreateRole" class="btn btn-success">Add New</a>
+            </p>
+            <hr />
+            <table class="table table-bordered table-hover table-condensed" id="myTable">
+                <thead>
+                    <tr class="bg-primary">
+                        <th>#.</th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Id)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Name)
+                        </th>
+                        <th>Action</th>
                     </tr>
-                }
-                else
-                {
-                    <tr class="success">
-                        <td>@i.</td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Id)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Name)
-                        </td>
-                        <td>
-                            <form asp-action="DeleteRole" asp-route-id="@item.Id" method="post">
-                                <a asp-action="EditRole" asp-controller="Account" asp-route-id="@item.Id" class="btn btn-warning btn-xs">Edit</a>
-                                <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete role : @item.Name')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                }
-                i++;
-            }
-        </tbody>
-    </table>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        if (i % 2 == 0)
+                        {
+                            <tr class="warning">
+                                <td>@i.</td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Id)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                </td>
+                                <td>
+                                    <form asp-action="DeleteRole" asp-route-id="@item.Id" method="post">
+                                        <a asp-action="EditRole" asp-controller="Account" asp-route-id="@item.Id" class="btn btn-warning btn-xs">Edit</a>
+                                        <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete role : @item.Name')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr class="success">
+                                <td>@i.</td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Id)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                </td>
+                                <td>
+                                    <form asp-action="DeleteRole" asp-route-id="@item.Id" method="post">
+                                        <a asp-action="EditRole" asp-controller="Account" asp-route-id="@item.Id" class="btn btn-warning btn-xs">Edit</a>
+                                        <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Are you sure you want to delete role : @item.Name')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        i++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- END PAGE CONTENT-->
 </div>
+
 
 @section Scripts{
     <script>

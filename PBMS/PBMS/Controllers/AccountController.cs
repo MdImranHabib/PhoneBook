@@ -173,7 +173,7 @@ namespace PBMS.Controllers
 
                         if (roleType == "Admin")
                         {
-                            return RedirectToAction("TestAdminDashboard", "Home");
+                            return RedirectToAction("AdminDashboard", "Home");
                         }
                         else
                         {

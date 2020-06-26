@@ -1,33 +1,65 @@
 ﻿@model UserClaimsViewModel
 @{
     ViewData["Title"] = "Manage User Claims";
-    Layout = "~/Views/Shared/TestAdminLayout.cshtml";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
 }
 
-<div class="well">
-    <h3 class="alert bg-primary text-center">Manage User Claims</h3>
-    <h4 class="text-warning">Add or Remove Claims from this User</h4>
-    <hr />
+
+<div class="page-content">
+    <!-- BEGIN PAGE HEADER-->
+    <h3 class="page-title">
+        Manage User Claims <small>manage user claims</small>
+    </h3>
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="fa fa-home"></i>
+                <a asp-action="AdminDashboard" asp-controller="Home">Home</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <a asp-action="UserList" asp-controller="Account">User List</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <a asp-action="EditUser" asp-controller="Account" asp-route-id="@Model.UserId">Edit User</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <a asp-action="ManageUserClaims" asp-controller="Account" asp-route-id="@Model.UserId">Manage User Claims</a>
+            </li>
+        </ul>
+    </div>
+    <!-- END PAGE HEADER-->
+    <!-- BEGIN PAGE CONTENT-->
     <div class="row">
-        <div class="col-md-4">
-            <form asp-action="ManageUserClaims" method="post">
-                <div class="form-group">
-                    @for (int i = 0; i < Model.Claims.Count; i++)
-                    {
-                        <div>
-                            <input type="hidden" asp-for="@Model.UserId" />
-                            <input type="hidden" asp-for="@Model.Claims[i].ClaimType" />
-                            <input asp-for="@Model.Claims[i].IsSelected" class="checkbox-inline" />
-                            <label asp-for="@Model.Claims[i].IsSelected" class="checkbox-inline">@Model.Claims[i].ClaimType</label>
+        <div class="col-md-12">
+            <h4 class="text-warning">Add or Remove Claims from this User</h4>
+            <hr />
+            <div class="row">
+                <div class="col-md-4">
+                    <form asp-action="ManageUserClaims" method="post">
+                        <div class="form-group">
+                            @for (int i = 0; i < Model.Claims.Count; i++)
+                            {
+                                <div>
+                                    <input type="hidden" asp-for="@Model.UserId" />
+                                    <input type="hidden" asp-for="@Model.Claims[i].ClaimType" />
+                                    <input asp-for="@Model.Claims[i].IsSelected" class="checkbox-inline" />
+                                    <label asp-for="@Model.Claims[i].IsSelected" class="checkbox-inline">@Model.Claims[i].ClaimType</label>
+                                </div>
+                            }
                         </div>
-                    }
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                        <div class="form-group">
+                            <input type="submit" value="Update" class="btn btn-success" />
+                            <a asp-action="EditUser" asp-route-id="@Model.UserId" class="btn btn-danger">Cancle</a>
+                        </div>
+                    </form>
                 </div>
-                <div asp-validation-summary="All" class="text-danger"></div>
-                <div class="form-group">
-                    <input type="submit" value="Update" class="btn btn-success" />
-                    <a asp-action="EditUser" asp-route-id="@Model.UserId" class="btn btn-danger">Cancle</a>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
+    <!-- END PAGE CONTENT-->
 </div>
+

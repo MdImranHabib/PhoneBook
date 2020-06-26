@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -32,7 +33,8 @@ namespace PBMS.Controllers
         // GET: Contacts
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Contacts.ToListAsync());
+            var contacts = await _context.Contacts.ToListAsync();
+            return View(contacts);
         }
 
         // GET: Contacts/Details/5
@@ -89,6 +91,9 @@ namespace PBMS.Controllers
 
         public ActionResult InsertBulkDatafromExcelfile()
         {
+            var watch = new Stopwatch();
+
+            watch.Start();
             IFormFile file = Request.Form.Files[0];
             string folderName = "UploadExcel";
             string webRootPath = _hostingEnvironment.WebRootPath;
@@ -133,9 +138,11 @@ namespace PBMS.Controllers
                         {
                             List<Contact> contacts = new List<Contact>();
 
+                            var count = 0;
+
                             for (int j = (sheet.FirstRowNum + 1); j <= sheet.LastRowNum; j++) //Read Excel File
                             {
-                                IRow row = sheet.GetRow(j);
+                                IRow row = sheet.GetRow(j);                               
 
                                 if (row == null) continue;
 
@@ -173,12 +180,18 @@ namespace PBMS.Controllers
                                     }
 
                                     contacts.Add(contact);
-                                }                                                           
+                                }
+                                else
+                                {
+                                    count++;
+                                }
                             }
 
                             _context.BulkInsert(contacts);
 
-                            sb.Append("<h5> Insertion Successfull!</h5>");
+                            watch.Stop();
+
+                            sb.Append("<h5> Insertion Successfull!. " + count + " duplicate number found. The process takes " + watch.ElapsedMilliseconds + " ms</h5>");
                         }
                     }                                      
                 }
@@ -188,76 +201,20 @@ namespace PBMS.Controllers
         }
 
 
-        //public ActionResult InsertBulkDatafromExcelfile()
-        //{
-        //    IFormFile file = Request.Form.Files[0];
-        //    string folderName = "UploadExcel";
-        //    string webRootPath = _hostingEnvironment.WebRootPath;
-        //    string newPath = Path.Combine(webRootPath, folderName);
-        //    StringBuilder sb = new StringBuilder();
+        [HttpPost]
+        public IActionResult DeleteAllContacts()
+        {
+            var contacts = _context.Contacts.ToList();
 
-        //    if (!Directory.Exists(newPath))
-        //    {
-        //        Directory.CreateDirectory(newPath);
-        //    }
+            if(contacts == null)
+            {
+                return RedirectToAction("Index");
+            }
 
-        //    if (file.Length > 0)
-        //    {
-        //        string sFileExtension = Path.GetExtension(file.FileName).ToLower();
-        //        ISheet sheet;
-        //        string fullPath = Path.Combine(newPath, file.FileName);
+            _context.BulkDelete(contacts);
 
-        //        using (var stream = new FileStream(fullPath, FileMode.Create))
-        //        {
-        //            file.CopyTo(stream);
-        //            stream.Position = 0;
-
-        //            if (sFileExtension == ".xls")
-        //            {
-        //                HSSFWorkbook hssfwb = new HSSFWorkbook(stream); //This will read the Excel 97-2000 formats  
-        //                sheet = hssfwb.GetSheetAt(0); //get first sheet from workbook  
-        //            }
-        //            else
-        //            {
-        //                XSSFWorkbook xssfwb = new XSSFWorkbook(stream); //This will read 2007 Excel format  
-        //                sheet = xssfwb.GetSheetAt(0); //get first sheet from workbook   
-        //            }
-
-        //            IRow headerRow = sheet.GetRow(0); //Get Header Row
-        //            int cellCount = headerRow.LastCellNum;
-
-        //            List<Contact> contacts = new List<Contact>();                    
-
-        //            for (int i = (sheet.FirstRowNum + 1); i <= sheet.LastRowNum; i++) //Read Excel File
-        //            {
-        //                IRow row = sheet.GetRow(i);
-
-        //                if (row == null) continue;
-
-        //                if (row.Cells.All(d => d.CellType == CellType.Blank)) continue;
-
-        //                var firstCell = row.FirstCellNum;
-
-        //                Contact contact = new Contact
-        //                {
-        //                    Name = row.GetCell(firstCell).ToString(),
-        //                    Address = row.GetCell(firstCell + 1).ToString(),
-        //                    Email = row.GetCell(firstCell + 2).ToString(),                          
-        //                    Number = row.GetCell(firstCell + 3).ToString(),
-        //                    Occupation = row.GetCell(firstCell + 4).ToString()
-        //                };
-
-        //                contacts.Add(contact);
-        //            }
-
-        //            _context.BulkInsert(contacts);
-
-        //            sb.Append("<h5> Insertion Successfull!</h5>");
-        //        }
-        //    }
-
-        //    return Content(sb.ToString());
-        //}
+            return RedirectToAction("Index");
+        }    
 
 
         // GET: Contacts/Edit/5
