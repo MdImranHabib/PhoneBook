@@ -57,9 +57,11 @@
                         <span asp-validation-for="Number" class="text-danger"></span>
                     </div>
                     <div class="form-group">
-                        <label asp-for="Occupation" class="control-label"></label>
-                        <input asp-for="Occupation" class="form-control" />
-                        <span asp-validation-for="Occupation" class="text-danger"></span>
+                        <label asp-for="GroupId" class="control-label">Group</label>
+                        <select asp-for="GroupId" class="form-control" asp-items="@ViewBag.GroupId">
+                            <option value="">--Select Group--</option>
+                        </select>
+                        <span asp-validation-for="GroupId" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <input type="submit" value="Submit" class="btn btn-success" />
@@ -84,13 +86,19 @@
                         <div class="col-md-4">
                             <input type="file" id="fileupload" name="files" class="form-control" />
                         </div>
+                        <div class="col-md-4">
+                            <label asp-for="GroupId" class="control-label">Group</label>
+                            <select id="gId" class="form-control" asp-items="@ViewBag.GroupId">
+                                <option value="">--Select Group--</option>
+                            </select>
+                        </div>
                         <div class="col-md-3">
                             <input type="button" name="Upload" value="Submit" id="btnupload" class="btn btn-success" />
                             @*<a href="@Url.Action("Download", "Home")">Download</a>*@
                         </div>
                         @*<div class="col-md-5">
-                        <input type="submit" name="Export" value="Create and Export" id="btnExport" class="btn btn-primary" asp-action="Export" asp-controller="Home">
-                    </div>*@
+            <input type="submit" name="Export" value="Create and Export" id="btnExport" class="btn btn-primary" asp-action="Export" asp-controller="Home">
+        </div>*@
                     </div>
 
                 </form>
@@ -134,9 +142,11 @@
                 var files = fileUpload.files;
                 fdata.append(files[0].name, files[0]);
 
+                var groupId = $("#gId").val();
+
                 $.ajax({
                     type: "POST",
-                    url: "/Contacts/InsertBulkDatafromExcelfile", //url: "/Home/Import",
+                    url: "/Contacts/InsertBulkDatafromExcelfile/" + groupId, //url: "/Home/Import",
                     beforeSend: function (xhr) {
                         xhr.setRequestHeader("XSRF-TOKEN",
                             $('input:hidden[name="__RequestVerificationToken"]').val());

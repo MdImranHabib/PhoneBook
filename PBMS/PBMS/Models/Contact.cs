@@ -30,7 +30,9 @@ namespace PBMS.Models
         [Remote(action: "IsNumberExist", controller: "Contacts", ErrorMessage = "This number already exist. Try another")]
         public string Number { get; set; }
 
-        [StringLength(50, ErrorMessage = "Occupation can't be Greater than 50 Characters")]
-        public string Occupation { get; set; }
+        [Required]
+        public int GroupId { get; set; }
+
+        public virtual Group Group { get; set; }
     }
 }

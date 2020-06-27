@@ -33,7 +33,7 @@ namespace PBMS.Controllers
         // GET: Contacts
         public async Task<IActionResult> Index()
         {
-            var contacts = await _context.Contacts.ToListAsync();
+            var contacts = await _context.Contacts.Include(c => c.Group).ToListAsync();
             return View(contacts);
         }
 
@@ -46,6 +46,7 @@ namespace PBMS.Controllers
             }
 
             var contact = await _context.Contacts
+                .Include(c => c.Group)
                 .SingleOrDefaultAsync(m => m.Id == id);
             if (contact == null)
             {
@@ -69,6 +70,7 @@ namespace PBMS.Controllers
         // GET: Contacts/Create
         public IActionResult Create()
         {
+            ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Name");
             return View();
         }
 
@@ -77,7 +79,7 @@ namespace PBMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Address,Email,Number,Occupation")] Contact contact)
+        public async Task<IActionResult> Create([Bind("Id,Name,Address,Email,Number,GroupId")] Contact contact)
         {
             if (ModelState.IsValid)
             {
@@ -85,11 +87,12 @@ namespace PBMS.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Name", contact.GroupId);
             return View(contact);
         }
 
 
-        public ActionResult InsertBulkDatafromExcelfile()
+        public ActionResult InsertBulkDatafromExcelfile(int groupId)
         {
             var watch = new Stopwatch();
 
@@ -173,10 +176,11 @@ namespace PBMS.Controllers
                                         {
                                             contact.Email = row.GetCell(k).ToString();
                                         }
-                                        else if (celName == "Occupation")
-                                        {
-                                            contact.Occupation = row.GetCell(k).ToString();
-                                        }                                       
+                                        //else if (celName == "GroupId")
+                                        //{
+                                        //    contact.GroupId = Convert.ToInt32(row.GetCell(k));
+                                        //}   
+                                        contact.GroupId = groupId;
                                     }
 
                                     contacts.Add(contact);
@@ -230,6 +234,7 @@ namespace PBMS.Controllers
             {
                 return NotFound();
             }
+            ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Name", contact.GroupId);
             return View(contact);
         }
 
@@ -238,7 +243,7 @@ namespace PBMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Address,Email,Number,Occupation")] Contact contact)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Address,Email,Number,GroupId")] Contact contact)
         {
             if (id != contact.Id)
             {
@@ -265,6 +270,7 @@ namespace PBMS.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["GroupId"] = new SelectList(_context.Groups, "Id", "Name", contact.GroupId);
             return View(contact);
         }
 
@@ -277,6 +283,7 @@ namespace PBMS.Controllers
             }
 
             var contact = await _context.Contacts
+                .Include(c => c.Group)
                 .SingleOrDefaultAsync(m => m.Id == id);
             if (contact == null)
             {
