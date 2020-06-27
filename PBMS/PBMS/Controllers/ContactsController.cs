@@ -92,7 +92,7 @@ namespace PBMS.Controllers
         }
 
 
-        public ActionResult InsertBulkDatafromExcelfile(int groupId)
+        public ActionResult InsertBulkDatafromExcelfile(int id)
         {
             var watch = new Stopwatch();
 
@@ -180,7 +180,10 @@ namespace PBMS.Controllers
                                         //{
                                         //    contact.GroupId = Convert.ToInt32(row.GetCell(k));
                                         //}   
-                                        contact.GroupId = groupId;
+                                        else
+                                        {
+                                            contact.GroupId = id;
+                                        }
                                     }
 
                                     contacts.Add(contact);
