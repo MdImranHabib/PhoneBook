@@ -1,4 +1,4 @@
-﻿@model IEnumerable<PBMS.Models.Group>
+﻿@model IEnumerable<PBMS.Models.Message>
 
 @{
     ViewData["Title"] = "Index";
@@ -8,21 +8,21 @@
 <div class="page-content">
     <!-- BEGIN PAGE HEADER-->
     <h3 class="page-title">
-        Group List <small>group list</small>
+        Blank Page <small>blank page</small>
     </h3>
     <div class="page-bar">
         <ul class="page-breadcrumb">
             <li>
                 <i class="fa fa-home"></i>
-                <a asp-action="AdminDashboard" asp-controller="Home">Home</a>
+                <a href="index.html">Home</a>
                 <i class="fa fa-angle-right"></i>
             </li>
-            @*<li>
-                <a asp-action="Create" asp-controller="Groups">Add New Group</a>
-                <i class="fa fa-angle-right"></i>
-            </li>*@
             <li>
-                <a asp-action="Index" asp-controller="Groups">Group List</a>
+                <a href="#">Page Layouts</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <a href="#">Blank Page</a>
             </li>
         </ul>
     </div>
@@ -37,10 +37,15 @@
                 <thead>
                     <tr>
                         <th>
-                            @Html.DisplayNameFor(model => model.Name)
+                            @Html.DisplayNameFor(model => model.Content)
                         </th>
-                        <th>No. of Contact</th>
-                        <th>Action</th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Number)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Type)
+                        </th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,9 +53,14 @@
                     {
                         <tr>
                             <td>
-                                @Html.DisplayFor(modelItem => item.Name)
+                                @Html.DisplayFor(modelItem => item.Content)
                             </td>
-                            <td>@item.Contacts.Count()</td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Number)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Type)
+                            </td>
                             <td>
                                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |

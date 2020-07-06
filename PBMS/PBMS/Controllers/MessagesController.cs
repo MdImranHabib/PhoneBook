@@ -10,22 +10,22 @@ using PBMS.Models;
 
 namespace PBMS.Controllers
 {
-    public class GroupsController : Controller
+    public class MessagesController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public GroupsController(ApplicationDbContext context)
+        public MessagesController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Groups
+        // GET: Messages
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Groups.Include(g => g.Contacts).ToListAsync());
+            return View(await _context.Message.ToListAsync());
         }
 
-        // GET: Groups/Details/5
+        // GET: Messages/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,39 +33,39 @@ namespace PBMS.Controllers
                 return NotFound();
             }
 
-            var @group = await _context.Groups
+            var message = await _context.Message
                 .SingleOrDefaultAsync(m => m.Id == id);
-            if (@group == null)
+            if (message == null)
             {
                 return NotFound();
             }
 
-            return View(@group);
+            return View(message);
         }
 
-        // GET: Groups/Create
+        // GET: Messages/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Groups/Create
+        // POST: Messages/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Group @group)
+        public async Task<IActionResult> Create([Bind("Id,Content,Number,Type")] Message message)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(@group);
+                _context.Add(message);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(@group);
+            return View(message);
         }
 
-        // GET: Groups/Edit/5
+        // GET: Messages/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -73,22 +73,22 @@ namespace PBMS.Controllers
                 return NotFound();
             }
 
-            var @group = await _context.Groups.SingleOrDefaultAsync(m => m.Id == id);
-            if (@group == null)
+            var message = await _context.Message.SingleOrDefaultAsync(m => m.Id == id);
+            if (message == null)
             {
                 return NotFound();
             }
-            return View(@group);
+            return View(message);
         }
 
-        // POST: Groups/Edit/5
+        // POST: Messages/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Group @group)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Content,Number,Type")] Message message)
         {
-            if (id != @group.Id)
+            if (id != message.Id)
             {
                 return NotFound();
             }
@@ -97,12 +97,12 @@ namespace PBMS.Controllers
             {
                 try
                 {
-                    _context.Update(@group);
+                    _context.Update(message);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!GroupExists(@group.Id))
+                    if (!MessageExists(message.Id))
                     {
                         return NotFound();
                     }
@@ -113,10 +113,10 @@ namespace PBMS.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(@group);
+            return View(message);
         }
 
-        // GET: Groups/Delete/5
+        // GET: Messages/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -124,30 +124,30 @@ namespace PBMS.Controllers
                 return NotFound();
             }
 
-            var @group = await _context.Groups
+            var message = await _context.Message
                 .SingleOrDefaultAsync(m => m.Id == id);
-            if (@group == null)
+            if (message == null)
             {
                 return NotFound();
             }
 
-            return View(@group);
+            return View(message);
         }
 
-        // POST: Groups/Delete/5
+        // POST: Messages/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var @group = await _context.Groups.SingleOrDefaultAsync(m => m.Id == id);
-            _context.Groups.Remove(@group);
+            var message = await _context.Message.SingleOrDefaultAsync(m => m.Id == id);
+            _context.Message.Remove(message);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool GroupExists(int id)
+        private bool MessageExists(int id)
         {
-            return _context.Groups.Any(e => e.Id == id);
+            return _context.Message.Any(e => e.Id == id);
         }
     }
 }

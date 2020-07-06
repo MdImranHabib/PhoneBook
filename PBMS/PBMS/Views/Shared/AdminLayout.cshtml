@@ -13,8 +13,7 @@
     <meta content="" name="description" />
     @*<meta content="" name="author" />*@
     <title>@ViewData["Title"] - PBMS</title>
-    <!-- BEGIN PACE PLUGIN FILES -->
-    <script src="~/AdminPanel/assets/global/plugins/pace/pace.min.js" type="text/javascript"></script>
+    <!-- BEGIN PACE PLUGIN FILES -->   
     <link href="~/AdminPanel/assets/global/plugins/pace/themes/pace-theme-barber-shop.css" rel="stylesheet" type="text/css" />
     <!-- END PACE PLUGIN FILES -->
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
@@ -535,7 +534,7 @@
                         </a>
                         <ul class="sub-menu">
                             <li>
-                                <a href="">
+                                <a asp-action="Create" asp-controller="Messages">
                                     <i class="icon-plus"></i>
                                     Number SMS
                                 </a>
@@ -1501,6 +1500,7 @@
     <script src="~/AdminPanel/assets/admin/layout/scripts/quick-sidebar.js" type="text/javascript"></script>
     <script src="~/AdminPanel/assets/admin/layout/scripts/demo.js" type="text/javascript"></script>
     <!-- END PAGE LEVEL SCRIPTS -->
+    <script src="~/AdminPanel/assets/global/plugins/pace/pace.min.js" type="text/javascript"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
 

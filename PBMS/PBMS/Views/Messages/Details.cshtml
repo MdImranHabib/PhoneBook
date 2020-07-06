@@ -1,0 +1,61 @@
+﻿@model PBMS.Models.Message
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/AdminLayout.cshtml";
+}
+
+<div class="page-content">
+    <!-- BEGIN PAGE HEADER-->
+    <h3 class="page-title">
+        Blank Page <small>blank page</small>
+    </h3>
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="fa fa-home"></i>
+                <a href="index.html">Home</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <a href="#">Page Layouts</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <a href="#">Blank Page</a>
+            </li>
+        </ul>
+    </div>
+    <!-- END PAGE HEADER-->
+    <!-- BEGIN PAGE CONTENT-->
+    <div class="row">
+        <div class="col-md-12">
+            <dl class="dl-horizontal">
+                <dt>
+                    @Html.DisplayNameFor(model => model.Content)
+                </dt>
+                <dd>
+                    @Html.DisplayFor(model => model.Content)
+                </dd>
+                <dt>
+                    @Html.DisplayNameFor(model => model.Number)
+                </dt>
+                <dd>
+                    @Html.DisplayFor(model => model.Number)
+                </dd>
+                <dt>
+                    @Html.DisplayNameFor(model => model.Type)
+                </dt>
+                <dd>
+                    @Html.DisplayFor(model => model.Type)
+                </dd>
+            </dl>
+            <div>
+                <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+                <a asp-action="Index">Back to List</a>
+            </div>
+        </div>
+    </div>
+    <!-- END PAGE CONTENT-->
+</div>
+    
