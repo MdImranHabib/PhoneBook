@@ -15,7 +15,6 @@ namespace PBMS.Models
         public string Content { get; set; }
 
         [Required]
-        [StringLength(15, MinimumLength = 11, ErrorMessage = "Invalid number")]
         public string Number { get; set; }
 
         [Required]

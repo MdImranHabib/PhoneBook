@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EFCore.BulkExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,7 @@ namespace PBMS.Controllers
         // GET: Messages/Create
         public IActionResult Create()
         {
+            ViewBag.Groups = _context.Groups.ToList();
             return View();
         }
 
@@ -54,15 +56,56 @@ namespace PBMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Content,Number,Type")] Message message)
+        public IActionResult Create([Bind("Id,Content,Number,Type")] Message message)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(message);
-                await _context.SaveChangesAsync();
+                List<Message> messages = new List<Message>();
+
+                char[] delimiterChars = { ' ', ',', '.', ':', '\t' };            
+
+                string[] numbers = message.Number.Split(delimiterChars);  
+
+                foreach (var number in numbers)
+                {
+                    Message aMessage = new Message
+                    {
+                        Content = message.Content,
+                        Number = number,
+                        Type = message.Type
+                    };
+
+                    messages.Add(aMessage);
+                }
+                //_context.Add(message);
+                //await _context.SaveChangesAsync();
+                _context.BulkInsert(messages);
                 return RedirectToAction(nameof(Index));
             }
             return View(message);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendGroupSMS(string content,int groupId, string type)
+        {
+            var contacts = await _context.Contacts.Where(c => c.GroupId == groupId).ToListAsync();
+
+            List<Message> messages = new List<Message>();
+
+            foreach (var contact in contacts)
+            {
+                Message message = new Message
+                {
+                    Content = content,
+                    Number = contact.Number,
+                    Type = type
+                };
+
+                messages.Add(message);
+            }
+            _context.BulkInsert(messages);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Messages/Edit/5
