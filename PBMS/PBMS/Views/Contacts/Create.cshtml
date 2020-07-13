@@ -77,27 +77,35 @@
                 <form class="form-inline">
                     @*asp-controller="Home" asp-action="Export"*@
                     <div>
-                        <h5 id="divPrint" class="text-info"></h5>
+                        <h5 id="divPrint" class="text-primary"></h5>
                     </div>
+
+                    <div style="width:300px;">
+                        <div id="progressbar" style="position:relative; display:none;">
+                            <span id="progressbar-level" style="position:absolute; left:35%; top:20%;">Loading...</span>
+                        </div>
+                    </div><br />
 
                     <div class="clearfix">&nbsp;</div>
 
                     <div class="form-group">
                         <input type="file" id="fileupload" name="files" class="form-control" />
                     </div>&nbsp;&nbsp;&nbsp;
+
                     <div class="form-group">
                         <label asp-for="GroupId" class="control-label">Group</label>
-                        <select id="gId" name="gId" class="form-control" asp-items="@ViewBag.GroupId">
+                        <select id="gId" name="gId" required class="form-control" asp-items="@ViewBag.GroupId">
                             <option value="">--Select Group--</option>
                         </select>
                     </div>&nbsp;&nbsp;&nbsp;
+
                     <div class="form-group">
                         <input type="button" name="Upload" value="Submit" id="btnupload" class="btn btn-success" />
                         @*<a href="@Url.Action("Download", "Home")">Download</a>*@
                     </div>
                     @*<div class="col-md-5">
-                          <input type="submit" name="Export" value="Create and Export" id="btnExport" class="btn btn-primary" asp-action="Export" asp-controller="Home">
-                    </div>*@
+              <input type="submit" name="Export" value="Create and Export" id="btnExport" class="btn btn-primary" asp-action="Export" asp-controller="Home">
+        </div>*@
                 </form>
             </div>
 
@@ -140,6 +148,8 @@
                 fdata.append(files[0].name, files[0]);
 
                 var id = $("#gId").val();
+                var progressbarDiv = $("#progressbar");
+                var progressbarLevel = $("#progressbar-level");
 
                 $.ajax({
                     type: "POST",
@@ -156,6 +166,8 @@
                             alert('Some error occured while uploading');
                         else {
                             $('#divPrint').html(response);
+                            progressbarLevel.text("Task Completed");
+                            progressbarDiv.fadeOut(2000);
                         }
                         $('#fileupload').val("");
                     },
@@ -164,7 +176,15 @@
                         $('#fileupload').val("");
                     }
                 });
-            })
+
+                progressbarLevel.text("Uploading...");
+                progressbarDiv.progressbar({
+                    value: false
+                }).fadeIn(500);
+
+                
+                $('#divPrint').fadeOut(2000);
+            });
 
             $('#btnExport').on('click', function () {
                 var fileExtension = ['xls', 'xlsx'];
